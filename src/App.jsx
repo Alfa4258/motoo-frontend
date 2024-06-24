@@ -8,6 +8,7 @@ import { ApplicationsAdd } from './assets/pages/dashboard/applicationsAdd'
 import { ApplicationsEdit } from './assets/pages/dashboard/applicationsEdit'
 import { Login } from './assets/pages/auth/login'
 import { Register } from './assets/pages/auth/register'
+import { ResetPassword } from './assets/pages/auth/resetPassword'
 import { Users } from './assets/pages/dashboard/users'
 import { UserAdd } from './assets/pages/dashboard/usersAdd'
 import { UserEdit } from './assets/pages/dashboard/usersEdit'
@@ -23,6 +24,9 @@ function App() {
         <Route path="/*" element={<DefaultLayout />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/password-reset" element={<ResetPassword />} />
+        
+        
         {/* <Route path="/applications/detail/:id" element={<AppDetail />} /> */}
         <Route path="/dashboard/*" element={<AuthLayout />} />
         <Route path="/*" element={<Navigate to="/" replace />} />

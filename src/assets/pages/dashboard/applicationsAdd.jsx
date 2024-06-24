@@ -52,14 +52,15 @@ export function ApplicationsAdd() {
 
     const [data, setData] = useState({
         // Define the fields you want to add
-        name: '', // required
+        short_name: '', // required
+        long_name: '', // required
         description: '', // required
         business_process: '', // required
         platform: 'website', // required, with specific enumerated options
         status: 'up', // required, with specific enumerated options, assuming default 'up'
         tier: '', // required, default set to '1', assuming the lowest level
         category: '', // required, need to select a valid category
-        group_area: '', // integer
+        group: '', // integer
         product_by: '', // integer
         image: '', // image file, handle as needed in your form logic
         db_connection_path: '', // required
@@ -136,8 +137,14 @@ export function ApplicationsAdd() {
                 <div className="grid grid-cols-1 gap-4 py-2">
                     <div >
                         <label className="form-control w-full ">
-                            <span className="label-text text-xs font-semibold">Name</span>
-                            <input type="text" value={data.name} onChange={handleChange} name="name" className="input input-bordered input-sm w-full" autoComplete="off" />
+                            <span className="label-text text-xs font-semibold">Short Name</span>
+                            <input type="text" value={data.short_name} onChange={handleChange} name="short_name" className="input input-bordered input-sm w-full" autoComplete="off" />
+                        </label>
+                    </div>
+                    <div >
+                        <label className="form-control w-full ">
+                            <span className="label-text text-xs font-semibold">Long Name</span>
+                            <input type="text" value={data.long_name} onChange={handleChange} name="long_name" className="input input-bordered input-sm w-full" autoComplete="off" />
                         </label>
                     </div>
 
@@ -202,10 +209,10 @@ export function ApplicationsAdd() {
                     <div>
                         <label className="form-control w-full ">
                             <span className="label-text text-xs font-semibold">Group Area</span>
-                            <select className="select select-bordered select-sm" name="group_area" value={data.group_area} onChange={handleChange}>
-                            <option value="">Select Group Area</option>
+                            <select className="select select-bordered select-sm" name="group" value={data.group} onChange={handleChange}>
+                            <option value="">Select Group </option>
                             {groupAreas.map((el, index) => (
-                                <option key={index} value={el.id}>{el.name}</option>
+                                <option key={index} value={el.id}>{el.short_name}</option>
                                 ))}
                             </select>
                         </label>
@@ -216,7 +223,7 @@ export function ApplicationsAdd() {
                             <select className="select select-bordered select-sm" name="product_by" value={data.product_by} onChange={handleChange}>
                             <option value="">Select Product By</option>
                             {companies.map((el, index) => (
-                                <option key={index} value={el.id}>{el.name}</option>
+                                <option key={index} value={el.id}>{el.short_name}</option>
                                 ))}
                             </select>
                         </label>
@@ -242,7 +249,7 @@ export function ApplicationsAdd() {
                             </select>
                         </label>
                     </div>
-                    {["group","business_process"].map(
+                    {["business_process"].map(
                         (el) => (
                             <div key={el}>
                                 <label className="form-control w-full ">
@@ -365,8 +372,6 @@ export function ApplicationsAdd() {
                 
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-2">
-
-
                     {["db_connection_path", "sap_connection_path","ad_connection_path"].map(
                         (el) => (
                             <div key={el}>
@@ -393,8 +398,8 @@ export function ApplicationsAdd() {
 
 
                 <div>
-                    <h3 className="py-2 font-bold">Description</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <h3 className="py-2 font-bold"></h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {["description","information"].map((el) => (
                             <div key={el}>
                                 <label className="form-control">
@@ -423,7 +428,11 @@ export function ApplicationsAdd() {
                         </button>
                     </Link>
                 </div>
-            </form>) : <div className="flex items-center justify-center min-h-screen bg-base-100"><span className="loading loading-infinity loading-lg items-center text-primary animate-bounce"></span><span className="text-2xl font-bold animate-bounce text-primary">&nbsp;Loading</span></div>}
+            </form>) : 
+            <div className="flex items-center justify-center min-h-screen bg-base-100">
+                <span className="loading loading-infinity loading-lg items-center text-primary animate-bounce">
+                    </span>
+                    <span className="text-2xl font-bold animate-bounce text-primary">&nbsp;Loading</span></div>}
 
 
         </>

@@ -42,17 +42,31 @@ export function Pics() {
         setCurrentPage(newPage);
     };
 
-    const [userLogin, setUserLogin] = useState({});
+    
     const navigate = useNavigate();
     const [loadPage, setLoadPage] = useState(false);
-
+    const [seeButton, setSeeButton] = useState(null);
+    
     const fetchData = async () => {
-        await instance.get("/user").then((response) => {
-            response.data.role !== "admin"
-                ? navigate("/dashboard")
-                : (setLoadPage(true), setUserLogin(response.data));
-        });
-    };
+
+        //fetch user from API
+        await instance.get('/user')
+            .then((response) => {
+                const userRole = response.data.role;
+
+                //set response user to state
+                if (userRole === "admin" || userRole === "teknisi") {
+                    setLoadPage(true);
+                } else {
+                    navigate('/dashboard');
+                }
+
+                if (userRole === "admin") {
+                    setSeeButton(true);
+                    setLoadPage(true);
+                }
+            })
+    }
 
     useEffect(() => {
         fetchData();

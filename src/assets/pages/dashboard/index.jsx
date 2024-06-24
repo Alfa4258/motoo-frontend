@@ -135,15 +135,15 @@ export function Dashboard() {
 
                                     {currentData.map((applications, index) => (
                                         <ApplicationCard
-                                            id={applications.id}
-                                            name={applications.name}
-                                            img={applications.image}
-                                            key={index}
-                                            status={applications.status}
-                                            platform={applications.platform}
-                                            category={applications.category}
-                                            group={applications.group}
-                                            group_area={applications.group_area.name}
+                                        id={applications.id}
+                                        name={applications.short_name}
+                                        img={applications.image}
+                                        key={index}
+                                        status={applications.status}
+                                        platform={applications.platform}
+                                        category={applications.category}
+                                        group_area={applications.group_area.short_name}
+                                        rating={applications.total_rating}
                                         />
                                     )
                                     )}

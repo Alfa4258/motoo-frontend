@@ -54,17 +54,31 @@ export function Company() {
         setCurrentPage(newPage);
     };
 
-    const [userLogin, setUserLogin] = useState({});
+
     const navigate = useNavigate();
     const [loadPage, setLoadPage] = useState(false);
+    const [seeButton, setSeeButton] = useState(null);
 
     const fetchData = async () => {
-        await instance.get('/user').then((response) => {
-            response.data.role !== "admin"
-                ? navigate('/dashboard/')
-                : (setLoadPage(true), setUserLogin(response.data));
-        });
-    };
+
+        //fetch user from API
+        await instance.get('/user')
+            .then((response) => {
+                const userRole = response.data.role;
+
+                //set response user to state
+                if (userRole === "admin" || userRole === "teknisi") {
+                    setLoadPage(true);
+                } else {
+                    navigate('/dashboard');
+                }
+
+                if (userRole === "admin") {
+                    setSeeButton(true);
+                    setLoadPage(true);
+                }
+            })
+    }
 
     useEffect(() => {
         fetchData();
@@ -94,8 +108,8 @@ export function Company() {
 
     const filteredApplications = companySpecified.applications
         ? companySpecified.applications.filter((app) =>
-              app.name.toLowerCase().includes(searchDetailTerm.toLowerCase())
-          )
+            app.name.toLowerCase().includes(searchDetailTerm.toLowerCase())
+        )
         : [];
 
     return (
@@ -119,6 +133,8 @@ export function Company() {
                                 </div>
                             ) : (
                                 <>
+                                {seeButton &&(
+                                    <>
                                     <div className="flex justify-between p-2">
                                         <Link to="add">
                                             <button className="btn btn-success btn-sm">
@@ -140,6 +156,9 @@ export function Company() {
                                             </button>
                                         </Link>
                                     </div>
+                                    </>
+                                    )
+                                }
                                     <table className="w-full table-x table">
                                         <thead>
                                             <tr>
@@ -253,6 +272,8 @@ export function Company() {
                     <div className={open ? "hidden md:block lg:w-3/12 shadow-xl px-2 py-4 min-h-screen bg-gray-200" : "hidden"}>
                         <div className="flex justify-between p-2 bg-gray-200">
                             <span className="text-2xl font-bold">Detail</span>
+                            {seeButton &&(
+                                    <>
                             {companySpecified.id === id && (
                                 <div className="flex gap-1">
                                     <Link to={`edit/${companySpecified.id}`}>
@@ -296,6 +317,7 @@ export function Company() {
                                     </button>
                                 </div>
                             )}
+                            </>)}
                         </div>
 
                         <div role="tablist" className="tabs tabs-boxed mt-4 bg-gray-200">

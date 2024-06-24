@@ -4,7 +4,7 @@ import instance from "../../../axios";
 
 export function UserEdit() {
     const [user, setUser] = useState([]);
-    const [load, setLoad] = useState(true);
+    const [loadPage, setLoadPage] = useState(false);
     //destruct ID
     const { id } = useParams();
     //define method
@@ -21,7 +21,7 @@ export function UserEdit() {
         await instance.get(`/users/${id}`).then((response) => {
             setUser(response.data.data);
             setData(response.data.data);
-            setLoad(false);
+            setLoadPage(true)
         });
     };
 
@@ -42,6 +42,7 @@ export function UserEdit() {
     }, []);
 
     const navigate = useNavigate();
+    
     const [data, setData] = useState({
         // Define the structure of your item
         // You might get this data from an API call or other sources
@@ -76,7 +77,7 @@ export function UserEdit() {
         }
     };
     return (
-        <>
+        <>{loadPage ?
             <form onSubmit={handleSubmit} className="container mx-auto p-4">
             <div className="font-bold text-lg">Edit User Data</div>
                 <div className="grid grid-cols-1 gap-4 py-2">
@@ -140,7 +141,7 @@ export function UserEdit() {
                         </button>
                     </Link>
                 </div>
-            </form>
+            </form>:<div className="flex items-center justify-center min-h-screen bg-base-100"><span className="loading loading-infinity loading-lg items-center text-primary animate-bounce"></span><span className="text-2xl font-bold animate-bounce text-primary">&nbsp;Loading</span></div>}
         </>
     )
 }

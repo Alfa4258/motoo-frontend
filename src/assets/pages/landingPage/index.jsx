@@ -20,7 +20,7 @@ export default function LandingPage() {
     const [ratingsFilter, setRatingsFilter] = useState([]);
     const [totalApp, setTotalApp] = useState();
 
-    const itemsPerPage = 12; // Number of items to display per page
+    const itemsPerPage = 8; // Number of items to display per page
 
     //define method
     const fetchDataApplications = async () => {
@@ -31,6 +31,7 @@ export default function LandingPage() {
             setTotalApp((response.data).length);
             setTotalPages(Math.ceil(data.length / itemsPerPage));
             setCurrentData(data.slice(0, itemsPerPage));
+            console.log(applications);
         })
 
     };
@@ -65,7 +66,7 @@ export default function LandingPage() {
             // Filter applications based on multiple criteria
             let filteredApplications = applications.filter(application => {
                 // Check platform if not 'All', case-insensitive
-                const byPlatform = platformFilter === 'All' || application.platform.toLowerCase() === platformFilter.toLowerCase();
+                const byPlatform = platformFilter === 'All' || applications.platform.toLowerCase() === platformFilter.toLowerCase();
     
                 // Check if the application category is in the categoriesFilter array, case-insensitive
                 const byCategory = categoriesFilter.length === 0 || categoriesFilter.some(filter => filter.toLowerCase() === application.category.toLowerCase());
@@ -73,8 +74,11 @@ export default function LandingPage() {
                 // Check if the application status is in the statusFilter array, case-insensitive
                 const byStatus = statusFilter.length === 0 || statusFilter.some(filter => filter.toLowerCase() === application.status.toLowerCase());
     
-                // Check if the application ratings are in the ratingsFilter array, case-insensitive
-                const byRatings = ratingsFilter.length === 0 || ratingsFilter.some(filter => filter.toLowerCase() === application.ratings.toLowerCase());
+                // Round the total_rating to the nearest integer
+                const roundedRating = Math.round(application.total_rating);
+
+                // Check if the rounded application rating is in the ratingsFilter array
+                const byRatings = ratingsFilter.length === 0 || ratingsFilter.includes(roundedRating);
     
                 // Return true if all conditions are met
                 return byPlatform && byCategory && byStatus && byRatings;
@@ -207,14 +211,14 @@ export default function LandingPage() {
                                                 status={applications.status}
                                                 platform={applications.platform}
                                                 category={applications.category}
-                                                gro up={applications.group}
-                                                group_area={applications.group_area.name}
+                                                group_area={applications.group_area.short_name}
+                                                rating={applications.total_rating}
                                             />
                                         )
                                         )}
                                     </div>
 
-                                    {applications.length > 15 && (
+                                    {applications.length > 8 && (
                                         <div className='mt-8 text-right'>
                                             <div className="join px-2">
                                                 <button className="join-item btn btn-primary btn-sm px-1 rounded-none" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">

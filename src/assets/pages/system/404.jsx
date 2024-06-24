@@ -13,7 +13,6 @@ export default function NotFoundPage() {
                     </p>
                 </div>
                 <div className="flex flex-col items-center justify-center gap-4">
-                   
                         <Link
                             className=" btn btn-primary transition-colors"
                             href="#"

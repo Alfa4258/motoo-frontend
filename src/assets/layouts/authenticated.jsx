@@ -98,7 +98,7 @@ function AuthLayout() {
 
                                         Dashboard</Link>
                                 </li>
-                                <li className=''>
+                                {/* <li className=''>
                                     <Link to={"/dashboard"} className='uppercase font-bold text-base-100'>
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
@@ -116,8 +116,8 @@ function AuthLayout() {
 
 
                                         Reports</Link>
-                                </li>
-                                {user.role !== "admin" ? <></> : <>
+                                </li> */}
+                                {(user.role === "admin" || user.role === "teknisi") ? (<>
                                     <li className=''>
                                         <details>
                                             <summary className='uppercase text-base-100 font-bold' >
@@ -126,6 +126,7 @@ function AuthLayout() {
                                                 </svg>
                                                 Master Data</summary>
                                                 <ul className='bg-secondary rounded-none text-base-100 font-bold absolute top-full left-0 z-50 w-full'>
+
                                                 <li>
                                                     <Link to={"/dashboard/applications"} className='uppercase'>
                                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -138,19 +139,7 @@ function AuthLayout() {
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z" />
                                                     </svg>
 
-                                                    Virtual machine
-                                                </Link></li>
-                                                <li><Link to={"/dashboard/topologies"} className='uppercase'>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                                                    </svg>
-                                                    Topology
-                                                </Link></li>
-                                                <li><Link to={"/dashboard/technologies"} className='uppercase'>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line>
-                                                    </svg>
-                                                    Technology
+                                                    <span className="whitespace-normal">Virtual Machine</span>
                                                 </Link></li>
                                                 <li><Link to={"/dashboard/users"} className='uppercase'>
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -158,15 +147,11 @@ function AuthLayout() {
                                                     </svg>
                                                     User
                                                 </Link></li>
-                                                <li><Link to={"/dashboard/pics"} className='uppercase'>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5.52 19c.64-2.2 1.84-3 3.22-3h6.52c1.38 0 2.58.8 3.22 3"/><circle cx="12" cy="10" r="3"/><circle cx="12" cy="12" r="10"/></svg>
-                                                    PIC
-                                                </Link></li>
                                                 <li><Link to={"/dashboard/groups"} className='uppercase'>
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
                                                     </svg>
-                                                    Group 
+                                                    Group
                                                 </Link></li>
                                                 <li><Link to={"/dashboard/companies"} className='uppercase'>
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -178,10 +163,8 @@ function AuthLayout() {
                                             </ul>
                                         </details>
                                     </li>
-
-
-
-                                </>}
+                                    </>
+                            ) : null}       
                             </ul>
                         </div>
                         <div className="navbar-end">

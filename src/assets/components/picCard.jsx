@@ -13,9 +13,8 @@ export function PICCard({ picData, title, className, onViewDetail }) {
             <div className="card-body flex flex-col items-center">
                 {picData.length > 0 ? (
                     <>
-                        <h1 className="card-title">{picData[0].name}</h1>
-                        <p>{picData[0].contact}</p>
                         <div>{title}</div>
+                        <h1 className="card-title">{picData[0].name}</h1>
                         <div className="card-actions justify-center items-center">
                             <button
                                 className="btn btn-outline btn-sm w-40"

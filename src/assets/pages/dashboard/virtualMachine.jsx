@@ -54,17 +54,31 @@ export function VirtualMachine() {
         setCurrentPage(newPage);
     };
 
-    const [userLogin, setUserLogin] = useState({});
     const navigate = useNavigate();
-    const [loadPage, setLoadPage] = useState(false);
+
+    const [seeButton, setSeeButton] = useState(null);
+    const [loadPage, setLoadPage] = useState(false)
 
     const fetchData = async () => {
-        await instance.get('/user').then((response) => {
-            response.data.role !== "admin"
-                ? navigate('/dashboard/')
-                : (setLoadPage(true), setUserLogin(response.data));
-        });
-    };
+
+        //fetch user from API
+        await instance.get('/user')
+            .then((response) => {
+                const userRole = response.data.role;
+
+                //set response user to state
+                if (userRole === "admin" || userRole === "teknisi") {
+                    setLoadPage(true);
+                } else {
+                    navigate('/dashboard');
+                }
+
+                if (userRole === "admin") {
+                    setSeeButton(true);
+                    setLoadPage(true);
+                }
+            })
+    }
 
     useEffect(() => {
         fetchData();
@@ -94,8 +108,8 @@ export function VirtualMachine() {
 
     const filteredApplications = virtualMachineSpecified.applications
         ? virtualMachineSpecified.applications.filter((app) =>
-              app.short_name.toLowerCase().includes(searchDetailTerm.toLowerCase())
-          )
+            app.short_name.toLowerCase().includes(searchDetailTerm.toLowerCase())
+        )
         : [];
 
     return (
@@ -119,6 +133,8 @@ export function VirtualMachine() {
                                 </div>
                             ) : (
                                 <>
+                                    {seeButton &&(
+                                    <>
                                     <div className="flex justify-between p-2">
                                         <Link to="add">
                                             <button className="btn btn-success btn-sm">
@@ -139,7 +155,10 @@ export function VirtualMachine() {
                                                 Add
                                             </button>
                                         </Link>
-                                    </div>
+                                        </div>                                    
+                                        </>
+                                    )
+                                        }
                                     <table className="w-full table-x table">
                                         <thead>
                                             <tr>
@@ -245,6 +264,8 @@ export function VirtualMachine() {
                     <div className={open ? "hidden md:block lg:w-3/12 shadow-xl px-2 py-4 min-h-screen bg-gray-200" : "hidden"}>
                         <div className="flex justify-between p-2 bg-gray-200">
                             <span className="text-2xl font-bold">Detail</span>
+                            {seeButton &&(
+                                    <>
                             {virtualMachineSpecified.id === id && (
                                 <div className="flex gap-1">
                                     <Link to={`edit/${virtualMachineSpecified.id}`}>
@@ -287,7 +308,7 @@ export function VirtualMachine() {
                                         Delete
                                     </button>
                                 </div>
-                            )}
+                            )}</>)}
                         </div>
 
                         <div role="tablist" className="tabs tabs-boxed mt-4 bg-gray-200">
@@ -318,8 +339,8 @@ export function VirtualMachine() {
                                 </div>
                             </div>
 
-                            <input type="radio" name="my_tabs_2" role="tab" className="tab font-bold" aria-label="Connected Apps" />
-                            <div role="tabpanel" className="tab-content bg-base-100">
+                            <input type="radio" name="my_tabs_2" role="tab" className="tab font-bold w-full whitespace-nowrap" aria-label="Connected Apps" />
+                            <div role="tabpanel" className="tab-content bg-base-100 ">
                                 <div className="py-4">
                                     {/* <input
                                         type="text"

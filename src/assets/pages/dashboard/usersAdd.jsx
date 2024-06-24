@@ -20,7 +20,7 @@ export function UserAdd() {
     const [data, setData] = useState({
         // Define the fields you want to add
         name: '',
-        role: 'user',
+        role: 'client',
         job: '',
         email: '',
         phone: '',
@@ -68,7 +68,7 @@ export function UserAdd() {
                     <label className="form-control w-full max-w-lg">
                         <span className="label-text text-xs font-semibold">role</span>
                         <select className="select select-bordered select-sm" name="role" value={data.role} onChange={handleChange}>
-                            <option value="User">User</option>
+                            <option value="client">client</option>
                             <option value="Teknisi">Teknisi</option>
                             <option value="Reporter">Reporter</option>
                             <option value="Admin">Admin</option>

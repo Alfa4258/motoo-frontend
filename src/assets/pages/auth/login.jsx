@@ -58,14 +58,8 @@ export function Login() {
             if (response.data.success) {
                 const adminContactInfo = response.data.data;
                 setAdminContact(adminContactInfo);
-                if (adminContactInfo.phone == null){
-                    setPopupMessage(`Hubungi Admin untuk mengganti password anda <br /><br />Email : ${adminContactInfo.email}`);
-                    setShowPopup(true);
-                }else {
-                    setPopupMessage(`Hubungi Admin untuk mengganti password anda <br /><br />Email : ${adminContactInfo.email}<br />Phone : ${adminContactInfo.phone}`);
-                    setShowPopup(true);
-                }
-
+                setPopupMessage(`Hubungi Admin untuk mengganti password anda <br /><br />Email : ${adminContactInfo.email}<br />Phone : ${adminContactInfo.phone}`);
+                setShowPopup(true);
             }
         } catch (error) {
             setValidation(error.response.data);
@@ -82,6 +76,10 @@ export function Login() {
     const closePopup = () => {
         setShowPopup(false);
         navigateTo('/login');
+        // setShowPopup(false);
+        // if (popupMessage.startsWith('Reset Password')) {
+        //     navigateTo('/login'); // Navigate to login page after closing popup
+        // }
     };
 
     return (

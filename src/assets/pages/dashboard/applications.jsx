@@ -21,7 +21,7 @@ export function Applications() {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
-    const itemsPerPage = 15; // Number of items to display per page
+    const itemsPerPage = 10; // Number of items to display per page
 
     const [open, setOpen] = useState(false);
     const [id, setId] = useState(0);
@@ -47,21 +47,17 @@ export function Applications() {
             setPicUser(data.pic_users || []);
             setPicOld(data.old_pics || []);
             console.log('application:', applicationSpecified);
-            console.log('total application:', applications);
         })
     };
     //define method 
     
-    const fetchDataApplications = async () => {
-        //fetch data from API with Axios
-        await instance.get("/applications").then((response) => {
+    const fetchDataApplications = async (page = 1, limit = itemsPerPage) => {
+        await instance.get(`/applications?page=${page}&limit=${limit}`).then((response) => {
             setApplications(response.data.data);
-            setLoad(false)
+            setLoad(false);
             console.log('application:', applications);
+            console.log('total application:', applications);
         });
-        // await instance.get("/applications").then((response) => {
-        //     setVirtualMachine(response.data.data);
-        // });
     };
 
     const deleteApplication = async (id) => {
@@ -101,9 +97,6 @@ export function Applications() {
     const handleCategoryChange = (e) => {
         debounced(e.target.value, setCategory);
     };
-    const handleGroupChange = (e) => {
-        debounced(e.target.value, setGroup);
-    };    
     const handleGroupAreaChange = (e) => {
         debounced(e.target.value, setGroupArea);
     };    
@@ -122,13 +115,13 @@ export function Applications() {
                 // Ensure all comparisons are case-insensitive and handle 'all' cases
                 const byPlatform = platform === 'all' || application.platform.toLowerCase() === platform.toLowerCase();
                 const byCategory = category === 'all' || application.category.toLowerCase() === category.toLowerCase();
-                const byGroup = group === 'all' || application.group.toLowerCase() === group.toLowerCase();
-                const byGroupArea = groupArea === 'all' || application.group_area.name.toLowerCase() === groupArea.toLowerCase();
+                const byGroupArea = groupArea === 'all' || application.group_area.short_name.toLowerCase() === groupArea.toLowerCase();
                 const byStatus = status === 'all' || application.status.toLowerCase() === status.toLowerCase();
-                const byName = application.name.toLowerCase().includes(searchTerm.toLowerCase());
+                const byShortName = application.short_name.toLowerCase().includes(searchTerm.toLowerCase());
+                const byLongName = application.long_name.toLowerCase().includes(searchTerm.toLowerCase());
     
                 // Return true if all conditions are met
-                return byPlatform && byCategory && byGroup && byGroupArea && byStatus && byName;
+                return byPlatform && byCategory && byGroupArea && byStatus && byShortName && byLongName;
             });
     
             // Update totalPages based on filtered or initial data
@@ -147,20 +140,22 @@ export function Applications() {
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
+        setLoadPage(true)
     };
     
     const handleExportData = () => {
         const flattenApplications = applications.map(app => ({
             ...app,
-            backup_pics: JSON.stringify(app.backup_pics),
-            first_pics: JSON.stringify(app.first_pics),
-            pic_icts: JSON.stringify(app.pic_icts),
-            pic_users: JSON.stringify(app.pic_users),
+            old_pics: JSON.stringify(app.old_pics.map(pic => pic.name)),
+            backup_pics: JSON.stringify(app.backup_pics.map(pic => pic.name)),
+            first_pics: JSON.stringify(app.first_pics.map(pic => pic.name)),
+            pic_icts: JSON.stringify(app.pic_icts.map(pic => pic.name)),
+            pic_users: JSON.stringify(app.pic_users.map(pic => pic.name)),
             product_by: JSON.stringify(app.product_by),
             reviews: JSON.stringify(app.reviews),
-            technology: JSON.stringify(app.technology),
-            topology: JSON.stringify(app.topology),
-            virtual_machines: JSON.stringify(app.virtual_machines),
+            technology: JSON.stringify(app.technology.map(techno => techno.id)),
+            topology: JSON.stringify(app.topology.map(topo => topo.id)),
+            virtual_machines: JSON.stringify(app.virtual_machines.map(vm => vm.id)),
         }));
 
         var wb = XLSX.utils.book_new();
@@ -196,22 +191,28 @@ export function Applications() {
 
     const navigate = useNavigate();
     const [loadPage, setLoadPage] = useState(false)
+    const [seeButton, setSeeButton] = useState(null);
 
     const fetchData = async () => {
 
         //fetch user from API
         await instance.get('/user')
             .then((response) => {
+                const userRole = response.data.role;
 
                 //set response user to state
-                (response.data.role !== "admin" ?
-                    navigate('/dashboard') : (setLoadPage(true)))
+                if (userRole === "admin" || userRole === "teknisi") {
+                    setLoadPage(true);
+                } else {
+                    navigate('/dashboard');
+                }
 
+                if (userRole === "admin") {
+                    setSeeButton(true);
+                    setLoadPage(true);
+                }
             })
     }
-
-
-
     //run hook useEffect
     useEffect(() => {
         fetchData();
@@ -228,7 +229,36 @@ export function Applications() {
                             <div className="flex items-center p-2"><span className="loading loading-infinity loading-md"></span>&emsp;Loading data</div>
                             : <div >
                                 <div className='flex justify-between p-2'>
-                                    <div className="flex gap-2">
+                                <div className="flex gap-2">
+                                        <Link to="/dashboard/topologies">
+                                            <button className='btn btn-secondary btn-sm'> 
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                                                    </svg>Master Data Topologies
+                                            </button>
+                                        </Link>
+                                        <Link to="/dashboard/technologies">
+                                            <button className='btn btn-secondary btn-sm'> 
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line>
+                                                    </svg>
+                                            Master Data Technology
+                                            </button>
+                                        </Link>
+                                        <Link to="/dashboard/pics">
+                                            <button className='btn btn-secondary btn-sm'> 
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5.52 19c.64-2.2 1.84-3 3.22-3h6.52c1.38 0 2.58.8 3.22 3"/><circle cx="12" cy="10" r="3"/><circle cx="12" cy="12" r="10"/></svg>
+                                            Master Data PIC
+                                            </button>
+                                        </Link>
+                                    </div>
+                                </div>
+
+                                <div className='flex justify-between p-2'>
+                                {seeButton &&(
+                                    <>
+                                        <div className="flex gap-2">
+                                        
                                         <Link to="add">
                                             <button className='btn btn-success btn-sm'><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 animate-bounce">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -240,21 +270,35 @@ export function Applications() {
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5" />
                                         </svg>Download
                                         </button>
-                                        
-                                        </div>
-
-                                        <label className="input input-bordered flex items-center gap-2">
-                                        <input  
-                                            placeholder="Search" 
-                                            value={searchTerm} 
-                                            onChange={handleSearch} 
-                                            name="searchBox"  
-                                        />
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 opacity-70"><path fillRule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clipRule="evenodd" /></svg>
+                                    
+                                    </div>
+                                    </>
+                                )
+                                    }
+                                        <label className="relative block">
+                                            <span className="absolute inset-y-0 left-0 flex items-center pl-2">
+                                                <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 16 16"
+                                                fill="currentColor"
+                                                className="w-4 h-4 text-gray-400"
+                                                >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+                                                    clipRule="evenodd"
+                                                />
+                                                </svg>
+                                            </span>
+                                            <input
+                                                type="text"
+                                                placeholder="Search"
+                                                value={searchTerm}
+                                                onChange={handleSearch}
+                                                name="searchBox"
+                                                className="input input-bordered pl-8 w-full"
+                                            />
                                         </label>
-                                    {/* <div className='badge badge-outline text-info'>
-                                        *click row for detail
-                                    </div> */}
                                 </div>
                                 <table className="w-full table-auto table-xs">
                                     <thead>
@@ -288,22 +332,6 @@ export function Applications() {
                                                 >
                                                     <option value="all">Category</option>
                                                     {["SAP","Non SAP","Turunan","OT/IT","Collaboration"].map((option) => (
-                                                    <option key={option} value={option}>
-                                                        {option}
-                                                    </option>
-                                                    ))}
-                                                </select>
-                                                </div>
-                                            </th>
-                                            <th className="px-2 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
-                                                <div className="flex items-center justify-between">
-                                                <select
-                                                    value={group}
-                                                    onChange={handleGroupChange}
-                                                    className="form-select rounded-lg p-2 "
-                                                >
-                                                    <option value="all">Group</option>
-                                                    {["a","b","s"].map((option) => (
                                                     <option key={option} value={option}>
                                                         {option}
                                                     </option>
@@ -355,12 +383,16 @@ export function Applications() {
                                                         {(applications.image == null) ? (<img src="/img/sig.png" alt="Default Image" className="h-12" />
                                                         ) : (
                                                             // <p>{applications.image}</p>
-                                                            <img src={applications.image} className="h-12" />
+                                                            <img
+                                                            src={applications.image}
+                                                            className="w-16 h-16 object-cover"
+                                                            alt={applications.name}
+                                                        />
                                                         )}
                                                         <div>
                                                             <p className="font-semibold text-md capitalize "
                                                             >
-                                                                {applications.name}
+                                                                {applications.short_name}
                                                             </p>
                                                             <p className="text-xs italic">
                                                                 {applications.url_prod}
@@ -375,10 +407,7 @@ export function Applications() {
                                                     {applications.category}
                                                 </td>
                                                 <td >
-                                                    {applications.group}
-                                                </td>
-                                                <td >
-                                                    {applications.group_area.name}
+                                                    {applications.group_area.short_name}
                                                 </td>
                                                 <td>
                                                     {(applications.status === "up") ? (
@@ -399,7 +428,7 @@ export function Applications() {
 
                                     <p>Total data {applications.length ? applications.length : 0} entries</p>
 
-                                    {applications.length > 15 && (<div className="join">
+                                    {applications.length > 10 && (<div className="join">
                                     <button 
                                         className="join-item btn btn-primary btn-sm p-1 rounded-none" 
                                         onClick={() => handlePageChange(currentPage - 1)} 
@@ -430,26 +459,30 @@ export function Applications() {
                 <div className={(open) ? "hidden md:block lg:w-4/12 shadow-xl px-2 py-4 min-h-screen bg-gray-200" : "hidden"}>
                     <div className="flex justify-between p-2 rounded-xl bg-gray-200">
                         <h1 className='text-2xl font-bold'>Detail</h1>
-                        {applicationSpecified.id === id && <div className="flex gap-1">
-                            <Link to={`edit/${applicationSpecified.id}`}>
-                                <button className="btn btn-warning btn-sm">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 ">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                                    </svg>Edit</button>
-                            </Link>
-                            <button className="btn btn-error btn-sm p-1" onClick={() => document.getElementById('my_modal_1').showModal()}>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 ">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                </svg>Delete
-                            </button>
-                            <button className="btn btn-success btn-sm p-1" onClick={handleExportDataSpecified}>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 ">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5" />
-                                </svg>Download
-                            </button>
+                        {seeButton &&(
+                                    <>
+                                    {applicationSpecified.id === id && <div className="flex gap-1">
+                                    <Link to={`edit/${applicationSpecified.id}`}>
+                                        <button className="btn btn-warning btn-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 ">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                            </svg>Edit</button>
+                                    </Link>
+                                    <button className="btn btn-error btn-sm p-1" onClick={() => document.getElementById('my_modal_1').showModal()}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 ">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                        </svg>Delete
+                                    </button>
+                                    <button className="btn btn-success btn-sm p-1" onClick={handleExportDataSpecified}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 ">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5" />
+                                        </svg>Download
+                                    </button>
 
-                        </div>}
-
+                                </div>}
+                                    </>  
+                                    )
+                                }
                 </div>
 
                 <div role="tablist" className="tabs tabs-boxed mt-4 bg-gray-200 overflow-hidden">
@@ -496,7 +529,16 @@ export function Applications() {
                                             )
                                         )}
 
-                                        {[[applicationSpecified.name, "name"], [applicationSpecified.category, "category"], [applicationSpecified.platform, "platform"], [applicationSpecified.user_login, "User Login"],[applicationSpecified.business_process, "business"],[applicationSpecified.group_area?.name || 'Group Area not available', "Group Area"], [applicationSpecified.tier, "Tier"], [applicationSpecified.status, "status"], [applicationSpecified.db_connection_path, "DB Connect"], [applicationSpecified.sap_connection_path, "SAP Connect"]].map(
+                                        {[[applicationSpecified.short_name, "Short name"],
+                                        [applicationSpecified.long_name, "Long name"],
+                                        [applicationSpecified.category, "category"], 
+                                        [applicationSpecified.platform, "platform"], 
+                                        [applicationSpecified.user_login, "User Login"],
+                                        [applicationSpecified.business_process, "business"],
+                                        [applicationSpecified.group_area?.short_name || 'Group Area not available', "Group Area"], [applicationSpecified.tier, "Tier"], 
+                                        [applicationSpecified.status, "status"], 
+                                        [applicationSpecified.db_connection_path, "DB Connect"], 
+                                        [applicationSpecified.sap_connection_path, "SAP Connect"]].map(
                                             (el) => (
                                                 (el[0] && <tr key={el} >
                                                     <td className="font-bold capitalize bg-gray-300">{el[1]}</td>
@@ -505,7 +547,7 @@ export function Applications() {
                                             )
                                         )}
 
-                                        {[[applicationSpecified.description, "description"], [applicationSpecified.user_login, "User Login"], [applicationSpecified.notes, "Notes"]].map(
+                                        {[[applicationSpecified.description, "description"], [applicationSpecified.information, "Information"]].map(
                                             (el) => (
                                                 (el[0] && <tr key={el} >
                                                     <td className="font-bold capitalize bg-gray-300 " colSpan={2}>{el[1]}
