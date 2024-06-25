@@ -207,6 +207,8 @@ export function Pics() {
                     <div className={open ? "hidden md:block lg:w-3/12 shadow-xl px-2 py-4 min-h-screen bg-gray-200" : "hidden"}>
                         <div className="flex justify-between p-2 bg-gray-200">
                             <span className="text-2xl font-bold">Detail</span>
+                            {seeButton &&(
+                                    <>
                             {picSpecified.id === id && (
                                 <div className="flex gap-1">
                                     <Link to={`edit/${picSpecified.id}`}>
@@ -250,6 +252,7 @@ export function Pics() {
                                     </button>
                                 </div>
                             )}
+                            </>)}
                         </div>
                         <div role="tablist" className="tabs tabs-boxed mt-4 bg-gray-200">
                             <input

@@ -207,7 +207,7 @@ export function Topology() {
                                                                 onClick={() => handleOpen(topo.id)}
                                                                 className="m-1 p-2 border rounded bg-gray-200"
                                                             >
-                                                                +{vm.applications.length - 7}
+                                                                +{topo.applications.length - 7}
                                                             </button>
                                                         )}
                                             </td>
