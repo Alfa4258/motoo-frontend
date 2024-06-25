@@ -8,6 +8,7 @@ export function PICCard({ picData, title, className, onViewDetail }) {
                     src={picData.length > 0 && picData[0].photo ? picData[0].photo : 'https://i.pinimg.com/564x/58/cc/f0/58ccf0b8588653f63f55e93dc68d7cd0.jpg'}
                     alt={`${title}`}
                     className={className}
+                    style={{ height: '300px', width: '100%', objectFit: 'cover' }}
                 />
             </figure>
             <div className="card-body flex flex-col items-center">
