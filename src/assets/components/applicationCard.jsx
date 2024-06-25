@@ -1,23 +1,30 @@
 import { Link } from "react-router-dom";
 
-export function ApplicationCard({ img, name, id, status, category, platform, group, group_area }) {
+export function ApplicationCard({ img, name, id, status, category, platform, group_area, rating}) {
     return (
         <Link to={`/application/${id}`} className="min-card-height" >
             <div className="card hover:bg-gray-200 hover:shadow-2xl hover:border-secondary border bg-base-100 h-full ">
             <div className="flex justify-end">
-                {status === "UP" ? (
+                {status === "up" ? (
                     <div className="badge badge-success text-xs p-1 m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
                         <path fillRule="evenodd" d="M8 14a.75.75 0 0 1-.75-.75V4.56L4.03 7.78a.75.75 0 0 1-1.06-1.06l4.5-4.5a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1-1.06 1.06L8.75 4.56v8.69A.75.75 0 0 1 8 14Z" clipRule="evenodd" />
                     </svg>
                     UP
                     </div>
-                ) : status === "DOWN" ? (
+                ) : status === "down" ? (
                     <div className="badge badge-error text-xs p-1 m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
                         <path fillRule="evenodd" d="M8 2a.75.75 0 0 1 .75.75v8.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.22 3.22V2.75A.75.75 0 0 1 8 2Z" clipRule="evenodd" />
                     </svg>
                     DOWN
+                    </div>
+                ) : status === "delete" ? (
+                    <div className="badge badge-error text-xs p-1 m-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
+                        <path fillRule="evenodd" d="M8 2a.75.75 0 0 1 .75.75v8.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.22 3.22V2.75A.75.75 0 0 1 8 2Z" clipRule="evenodd" />
+                    </svg>
+                    DELETE
                     </div>
                 ) : (
                     <div className="badge badge-warning text-xs p-1 m-2">
@@ -48,7 +55,7 @@ export function ApplicationCard({ img, name, id, status, category, platform, gro
                     </div>
                     <div className="rating rating-sm join py-1">
                         <input type="radio" name="rating-app" className="mask mask-star-2 bg-accent" />
-                        <span className="text-sm"> &nbsp;(4.5)</span>
+                        <span className="text-sm"> &nbsp;{rating}</span>
                     </div>
                 </div>
             </div>

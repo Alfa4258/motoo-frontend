@@ -119,7 +119,7 @@ export function FilterPanel({
               onChange={handleRatingChange}
             />
             &emsp;{[...Array(rating)].map((_, i) => (
-              <Star key={i} />
+              <Star isFilled={true} key={i} />
             ))}&nbsp;{rating}
           </div>
         ))}
