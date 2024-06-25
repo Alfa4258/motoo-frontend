@@ -52,26 +52,70 @@ export function AppDetail() {
     const [review, setReview] = useState([]);
     const [totalRatings, setTotalRatings] = useState([]);
     const [totalReviews, setTotalReviews] = useState([]);
+    const [ratingCounts, setRatingCounts] = useState({
+        Rating1: 0,
+        Rating2: 0,
+        Rating3: 0,
+        Rating4: 0,
+        Rating5: 0,
+    });
+    const [progressValues, setProgressValues] = useState({
+        Rating1: 0,
+        Rating2: 0,
+        Rating3: 0,
+        Rating4: 0,
+        Rating5: 0,
+    });
 
     const fetchReviews = async () => {
         try {
             const appResponse = await instance.get(`/applications/${id}`);
             const appData = appResponse.data.data;
             setReview(appData.reviews || []);
-            setTotalRatings(appData.total_rating || []);
-            setTotalReviews(appData.total_review || []);
+            // Calculate the counts of each rating
+            const counts = { Rating1: 0, Rating2: 0, Rating3: 0, Rating4: 0, Rating5: 0 };
+            appData.reviews.forEach((review) => {
+                const key = `Rating${review.rating}`;
+                counts[key] = (counts[key] || 0) + 1;
+            });
+            setRatingCounts(counts);
+            setTotalRatings(appData.total_rating || 0);
+            setTotalReviews(appData.total_review || 0);
+            setTotalRatings(appData.total_rating || 0);
+
+            const getProgressValue = (count) => {
+                if (appData.total_review > 0) {
+                    return (count / appData.total_review) * 100;
+                }
+                return 0;
+            };
+
+            const progressValues = {
+                Rating1: getProgressValue(counts.Rating1),
+                Rating2: getProgressValue(counts.Rating2),
+                Rating3: getProgressValue(counts.Rating3),
+                Rating4: getProgressValue(counts.Rating4),
+                Rating5: getProgressValue(counts.Rating5),
+            };
+
+            setProgressValues(progressValues);
+            
         } catch (error) {
             console.log('Error fetching reviews', error);
         }
     };
+
     
+
+
 
     //token
     const token = localStorage.getItem("token");
     const [user, setUser] = useState([]);
 
-
-    const [seeButton, setSeeButton] = useState(null);
+    const [seeReview, setSeeReview] = useState(null);
+    const [seeDocsButton, setSeeDocsButton] = useState(null);
+    const [seeDeleteButton, setSeeDeleteButton] = useState(null);
     const [seeData, setSeeData] = useState(null);
     const [seeTechnician, setSeeTechnician] = useState(false);
     const [seeTechnology, setSeeTechnology] = useState(false);
@@ -85,34 +129,65 @@ export function AppDetail() {
                 // Set response user to state
                 setUser(response.data);
                 const userRole = response.data.role;
-                if (userRole === "admin" || userRole === "teknisi") {
+                if (userRole === "admin" ) {
                     setSeeData(true);
-                    setSeeButton(true)
+                    setSeeDocsButton(true);
+                    // setSeeDeleteButton(true);
                     setSeeTechnician(true);
                     setSeeTechnology(true);
                     setSeeTopology(true);
                     setLoadPage(true);
+                    setSeeReview(false);
+                } else if (userRole === "teknisi") {
+                    setSeeData(true);
+                    setSeeDocsButton(true);
+                    setSeeTechnician(true);
+                    setSeeTechnology(true);
+                    setSeeTopology(true);
+                    setLoadPage(true);
+                    setSeeReview(false);
                 } else if (userRole === "reporter") {
                     setSeeData(true);
                     setSeeTechnician(true);
                     setSeeTechnology(false);
                     setSeeTopology(false);
                     setLoadPage(true);
+                    setSeeReview(false);
                 } else {
                     setSeeData(false);
                     setSeeTechnician(false);
                     setSeeTechnology(false);
                     setSeeTopology(false);
+                    setSeeReview(true);
                 }
             })
             .catch((error) => {
                 console.error("Error fetching user data", error);
                 setSeeData(false);
+                setSeeReview(false);
                 setSeeTechnician(false);
                 setSeeTechnology(false);
                 setSeeTopology(false);
+                
             });
     };
+
+
+    const [existingReview, setExistingReview] = useState(null);
+    useEffect(() => {
+        console.log("Current user:", user);
+            const userReview = review.find(review => review.reviewer.id === user.id);
+            console.log("Found user review:", userReview);
+            setExistingReview(userReview);
+            if (userReview) {
+                setData(prevData => ({
+                    ...prevData,
+                    review_text: userReview.review_text,
+                    rating: userReview.rating,
+                    review_id: userReview.id,
+                }));
+        }
+    }, [user, review]);
 
 
     const getDateNow = () => {
@@ -123,60 +198,63 @@ export function AppDetail() {
     const handleChange = (e) => {
         setData({ ...data, [e.target.name]: e.target.value });
     };
-
-    
-
-
     const handleSubmitReview = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
-        if (!token) {
-            alert("You need to log in first to submit a review.");
-            // Optionally, redirect to login page
-            window.location.href = "/login"; // Un-comment this line if you have a login page to redirect to
-            setIsLoading(false); // Set isLoading to false because no action was performed`
-            
-            return;
-        }
-    
-        try {
-            if (data.review_id) {
-                // Update existing review
-                const response = await instance.put(`/reviews/${data.review_id}`, data, {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                });
-                console.log('Review updated successfully', response.data);
-            } else {
-                // Create new review
-                const response = await instance.post('/reviews', data, {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                });
-                console.log('Review added successfully', response.data);
-            }
-            setData({ ...data, review_text: '', rating: 0 });
-            await fetchReviews();
-        } catch (error) {
-            console.log('Error adding/updating review', error);
-        } finally {
-            setIsLoading(false); // Set isLoading to false after the operation completes (success or failure)
+    e.preventDefault();
+    setIsLoading(true);
+
+    if (!token) {
+        alert("You need to log in first to submit a review.");
+        window.location.href = "/login"; // Redirect if not logged in
+        setIsLoading(false);
+        return;
+    }
+
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+        formData.append(key, data[key]);
+    });
+
+    const config = {
+        headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`
         }
     };
-    
 
-    const renderStars = (rating) => {
-
-        const totalStars = 5;
-        let stars = [];
-        for (let i = 1; i <= totalStars; i++) {
-            stars.push(<Star key={i} color={i <= rating ? "filled" : "none"} />);
+    try {
+        if (existingReview) {
+            // Update existing review using PATCH
+            formData.append('_method', 'PATCH'); // Simulate PATCH using _method
+            const response = await instance.post(`/reviews/${data.review_id}`, formData, config);
+            console.log('Review updated successfully', response.data);
+        } else {
+            // Create new review using POST
+            const response = await instance.post('/reviews', formData, config);
+            console.log('Review added successfully', response.data);
         }
-        return stars;
+
+        // Reset form data after submission
+        setData({ review_text: '', rating: 0, review_id: null });
+
+        // Fetch updated reviews
+        await fetchReviews();
+    } catch (error) {
+        console.log('Error adding/updating review', error);
+    } finally {
+        setIsLoading(false);
+    }
+};
+
+    const deleteReview = async (id) => {
+        await instance.delete(`/reviews/${id}`).then((response) => {
+            setReview(
+                review.filter((review) => {
+                    return review.id !== id;
+                })
+            )
+        });
     };
-    
+
     const [selectedPicData, setSelectedPicData] = useState(null);
     const [modalTitle, setModalTitle] = useState('');
 
@@ -186,11 +264,6 @@ export function AppDetail() {
         setModalTitle(title);
         document.getElementById('modal-pic').showModal();
     };
-    
-    console.log('app data: ',applications);
-    console.log('app review: ',review);
-
-    
 
     //run hook useEffect
     useEffect(() => {
@@ -199,6 +272,8 @@ export function AppDetail() {
         fetchData();
         fetchReviews();
     }, []);
+
+    console.log(review);
 
     return (
         <>{loadPage ? (<div >
@@ -240,7 +315,7 @@ export function AppDetail() {
                                 <p>{applications.description}</p>
                             </div>
                             <div className="px-2 py-4 border-gray-300 border-b border-t">   
-                            {seeButton &&(
+                            {seeDocsButton &&(
                                     <>
                                 <button 
                                     onClick={() => window.open(`${applications.technical_doc}`, '_blank')} 
@@ -360,8 +435,8 @@ export function AppDetail() {
                                                         <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
                                                     </svg>
                                                 </div>
-                                                <progress className="progress progress-primary w-full" value="100" max="100"></progress>
-                                                <div className="text-sm">(32)</div>
+                                                <progress className="progress progress-primary w-full" value={progressValues.Rating5} max="100"></progress>
+                                                <div className="text-sm">{ratingCounts.Rating5}</div>
                                             </div>
                                             <div className="flex items-center gap-2 px-4">
                                                 <div className="rating rating-4">
@@ -381,8 +456,8 @@ export function AppDetail() {
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
                                                     </svg>
                                                 </div>
-                                                <progress className="progress progress-primary w-full" value="0" max="100"></progress>
-                                                <div className="text-sm">(0)</div>
+                                                <progress className="progress progress-primary w-full" value={progressValues.Rating4} max="100"></progress>
+                                                <div className="text-sm">{ratingCounts.Rating4}</div>
                                             </div>
                                             <div className="flex items-center gap-2 px-4">
                                                 <div className="rating rating-3">
@@ -403,8 +478,8 @@ export function AppDetail() {
                                                     </svg>
 
                                                 </div>
-                                                <progress className="progress progress-primary w-full" value="0" max="100"></progress>
-                                                <div className="text-sm">(0)</div>
+                                                <progress className="progress progress-primary w-full" value={progressValues.Rating3} max="100"></progress>
+                                                <div className="text-sm">{ratingCounts.Rating3}</div>
                                             </div>
                                             <div className="flex items-center gap-2 px-4">
                                                 <div className="rating rating-2">
@@ -424,8 +499,8 @@ export function AppDetail() {
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
                                                     </svg>
                                                 </div>
-                                                <progress className="progress progress-primary w-full" value="0" max="100"></progress>
-                                                <div className="text-sm">(0)</div>
+                                                <progress className="progress progress-primary w-full" value={progressValues.Rating2} max="100"></progress>
+                                                <div className="text-sm">{ratingCounts.Rating2}</div>
                                             </div>
                                             <div className="flex items-center gap-2 px-4">
                                                 <div className="rating rating-1">
@@ -445,11 +520,13 @@ export function AppDetail() {
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
                                                     </svg>
                                                 </div>
-                                                <progress className="progress progress-primary w-full" value="0" max="100"></progress>
-                                                <div className="text-sm">(0)</div>
+                                                <progress className="progress progress-primary w-full" value={progressValues.Rating1} max="100"></progress>
+                                                <div className="text-sm">{ratingCounts.Rating1}</div>
                                             </div>
 
                                         </div>
+                                        {seeReview &&(
+                                        <>
                                         <div className="bg-base-100 p-6 shadow-xl">
                                         <form onSubmit={handleSubmitReview}>
                                             <div className="join justify-start flex py-2">
@@ -473,6 +550,7 @@ export function AppDetail() {
                                             </button>
                                         </form>
                                         </div>
+                                        </>)}
                                     </div>
 
                                     <div className="mt-4 md:mt-0 block w-full lg:w-8/12 overflow-y-auto max-h-screen">
@@ -482,6 +560,14 @@ export function AppDetail() {
                                                 {review.map((el, index) => (
                                                     <div key={index} className="mb-2 rounded-2xl border border-gray-300 shadow-xl"  >
                                                         <div className="p-6 text-left">
+                                                        {seeDeleteButton &&(
+                                                            <>
+                                                        <button className="btn btn-error btn-sm p-1" onClick={() => document.getElementById('delete-modal').showModal()}>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 ">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                                            </svg>Delete
+                                                        </button>
+                                                        </>)}
                                                             <div className="flex justify-between border-b border-neutral py-2">
                                                                 <div className="w-full">
                                                                     <div className="text-lg">{el.review_text}</div>
@@ -493,10 +579,12 @@ export function AppDetail() {
                                                                     {el.reviewer.name}
                                                                 </div>
                                                                 <div className="badge text-xs">
-                                                                    {renderStars(el.rating)}
+                                                                    {el.rating}
+                                                                    <Star isFilled={true}/>
                                                                 </div>
                                                             </div>
                                                         </div>
+                                                        
                                                     </div>
                                                 ))}
                                             </>
@@ -592,6 +680,27 @@ export function AppDetail() {
 
                 </section >)}
 
+                <dialog id="delete-modal" className="modal">
+                    <div className="modal-box">
+                        <h3 className="font-bold text-lg">Delete</h3>
+                        <p className="pt-4">Are you sure to delete the data?</p>
+                        <div className="modal-action">
+                            <div method="dialog">
+                                {/* if there is a button in form, it will close the modal */}
+
+                                <button className="btn btn-success btn-sm mr-2" onClick={() => (deleteReview(review.id), document.getElementById('delete-modal').close())} ><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                </svg>
+                                    Yes</button>
+                                <button className="btn btn-error btn-sm" onClick={() => document.getElementById('delete-modal').close()}><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                    No</button>
+                            </div>
+                        </div>
+                    </div>
+                </dialog>
+
                 <dialog id="modal-pic" className="modal">
                     <div className="modal-box max-w-6xl w-full">
                         <h3 className="font-bold text-xl mb-2">Detail {modalTitle}</h3>
@@ -605,6 +714,14 @@ export function AppDetail() {
                                     <tr>
                                         <td className="font-semibold capitalize">Contact</td>
                                         <td>{selectedPicData.contact}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="font-semibold capitalize">JobDesc</td>
+                                        <td>{selectedPicData.jobdesc}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="font-semibold capitalize">Status</td>
+                                        <td>{selectedPicData.status}</td>
                                     </tr>
                                 </tbody>
                                 <tbody>
