@@ -42,17 +42,44 @@ export function Users() {
         setCurrentPage(newPage);
     };
 
-    const [userLogin, setUserLogin] = useState({});
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+    };
     const navigate = useNavigate();
     const [loadPage, setLoadPage] = useState(false);
-
+    const [seeButton, setSeeButton] = useState(null);
     const fetchData = async () => {
-        await instance.get("/user").then((response) => {
-            response.data.role !== "admin"
-                ? navigate("/dashboard")
-                : (setLoadPage(true), setUserLogin(response.data));
-        });
-    };
+
+        //fetch user from API
+        await instance.get('/user')
+            .then((response) => {
+                const userRole = response.data.role;
+
+                //set response user to state
+                if (userRole === "admin" || userRole === "teknisi") {
+                    setLoadPage(true);
+                } else {
+                    navigate('/dashboard');
+                }
+
+                if (userRole === "admin") {
+                    setSeeButton(true);
+                    setLoadPage(true);
+                }
+            })
+    }
+
+    const filteredUser = user.filter((user) => {
+        const { name, role, team } = user;
+
+        return (
+            name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            team.toLowerCase().includes(searchTerm.toLowerCase()) 
+        );
+    });
 
     useEffect(() => {
         fetchData();
@@ -74,6 +101,8 @@ export function Users() {
                             ) : (
                                 <>
                                     <div className="flex justify-between p-2">
+                                    {seeButton &&(
+                                    <>
                                         <Link to="add">
                                             <button className="btn btn-success btn-sm">
                                                 <svg
@@ -93,14 +122,36 @@ export function Users() {
                                                 Add
                                             </button>
                                         </Link>
-                                        <div className="badge badge-outline text-error">
-                                            *click row for detail
-                                        </div>
+                                        </>)}
+                                        <label className="relative block">
+                                            <span className="absolute inset-y-0 left-0 flex items-center pl-2">
+                                                <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 16 16"
+                                                fill="currentColor"
+                                                className="w-4 h-4 text-gray-400"
+                                                >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+                                                    clipRule="evenodd"
+                                                />
+                                                </svg>
+                                            </span>
+                                            <input
+                                                type="text"
+                                                placeholder="Search"
+                                                value={searchTerm}
+                                                onChange={handleSearchChange}
+                                                name="searchBox"
+                                                className="input input-bordered pl-8 w-full"
+                                            />
+                                        </label>
                                     </div>
                                     <table className="w-full table-auto my-4 table-xs">
                                         <thead>
                                             <tr>
-                                                {["name", "role", "email", "phone"].map((el) => (
+                                                {["name", "role", "team","email", "phone"].map((el) => (
                                                     <td
                                                         key={el}
                                                         className="text-left font-semibold capitalize text-sm border-b border-neutral py-2"
@@ -111,7 +162,7 @@ export function Users() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {currentData.map((user, index) => (
+                                        {filteredUser.slice(startIndex, endIndex).map((user, index) => (
                                                 <tr
                                                     key={index}
                                                     onClick={() => handleOpen(user.id)}
@@ -167,6 +218,7 @@ export function Users() {
                                                             </div>
                                                         )}
                                                     </td>
+                                                    <td>{user.team}</td>
                                                     <td>{user.email}</td>
                                                     <td>{user.phone}</td>
                                                 </tr>
@@ -317,6 +369,7 @@ export function Users() {
                                                 [userSpecified.name, "name"],
                                                 [userSpecified.email, "email"],
                                                 [userSpecified.role, "role"],
+                                                [userSpecified.job, "job"],
                                                 [userSpecified.phone, "phone"],
                                             ].map(
                                                 (el) =>
