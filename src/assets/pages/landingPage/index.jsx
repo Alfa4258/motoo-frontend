@@ -86,7 +86,7 @@ export default function LandingPage() {
     
             // Apply search term filter last, if applicable
             if (searchTerm) {
-                filteredApplications = filteredApplications.filter(application => application.name.toLowerCase().includes(searchTerm.toLowerCase()));
+                filteredApplications = filteredApplications.filter(application => application.short_name.toLowerCase().includes(searchTerm.toLowerCase()));
             }
     
             // Update state to render the filtered and searched applications
